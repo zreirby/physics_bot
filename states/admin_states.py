@@ -19,3 +19,7 @@ class AddTask(StatesGroup):
     waiting_for_hint = State()
     waiting_for_solution = State()
     confirming = State()
+
+class Broadcast(StatesGroup):
+    waiting_for_message = State()
+    confirming = State()

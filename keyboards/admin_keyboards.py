@@ -28,3 +28,42 @@ confirm_keyboard = InlineKeyboardMarkup(inline_keyboard=[
         InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_add_task")
     ]
 ])
+
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+STUDENTS_PER_PAGE = 10
+
+def get_students_keyboard(students, page=1):
+    buttons = []
+    # Кнопки с учениками
+    for student in students:
+        # student[0] - telegram_id, student[1] - full_name
+        buttons.append([
+            InlineKeyboardButton(text=student[1], callback_data=f"student_{student[0]}")
+        ])
+
+    # Кнопки пагинации
+    pagination_buttons = []
+    if page > 1:
+        pagination_buttons.append(
+            InlineKeyboardButton(text="⬅️ Назад", callback_data=f"view_students_{page - 1}")
+        )
+    if len(students) == STUDENTS_PER_PAGE:
+        pagination_buttons.append(
+            InlineKeyboardButton(text="Вперед ➡️", callback_data=f"view_students_{page + 1}")
+        )
+
+    if pagination_buttons:
+        buttons.append(pagination_buttons)
+
+    buttons.append([InlineKeyboardButton(text="🏠 В админ-меню", callback_data="admin_main_menu")])
+
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+confirm_broadcast_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [
+        InlineKeyboardButton(text="✅ Да, отправить", callback_data="confirm_broadcast"),
+        InlineKeyboardButton(text="❌ Отмена", callback_data="cancel_broadcast")
+    ]
+])

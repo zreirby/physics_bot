@@ -215,3 +215,43 @@ async def add_new_task(task_data):
         except Exception as e:
             print(f"Error adding task to DB: {e}")
             await db.rollback() # Откатываем изменения в случае ошибки
+
+# database/database.py
+# ... (в конец файла)
+
+STUDENTS_PER_PAGE = 10
+
+async def get_all_students(page=1):
+    async with aiosqlite.connect(DB_NAME) as db:
+        offset = (page - 1) * STUDENTS_PER_PAGE
+        cursor = await db.execute(
+            "SELECT telegram_id, full_name FROM users WHERE role = 'student' ORDER BY registration_date DESC LIMIT ? OFFSET ?",
+            (STUDENTS_PER_PAGE, offset)
+        )
+        return await cursor.fetchall()
+
+async def get_student_last_answers(telegram_id, limit=10):
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute(
+            "SELECT id FROM users WHERE telegram_id = ?", (telegram_id,)
+        )
+        user_id = await cursor.fetchone()
+        if not user_id:
+            return []
+
+        cursor = await db.execute(
+            """
+            SELECT task_id, answer_given, is_correct, timestamp, action_type
+            FROM user_answers
+            WHERE user_id = ?
+            ORDER BY timestamp DESC
+            LIMIT ?
+            """,
+            (user_id[0], limit)
+        )
+        return await cursor.fetchall()
+
+async def get_all_user_ids():
+    async with aiosqlite.connect(DB_NAME) as db:
+        cursor = await db.execute("SELECT telegram_id FROM users WHERE role = 'student'")
+        return await cursor.fetchall()
